@@ -331,6 +331,104 @@
       color: var(--holiday-ink);
     }
 
+    .maternity-tool {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 6px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 20px rgba(23, 32, 51, 0.05);
+    }
+
+    .maternity-tool h2 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .maternity-tool button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 14px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .maternity-tool button.active {
+      background: #f5b5cf;
+      border-color: #d97aa6;
+      color: #6a234a;
+    }
+
+    .maternity-tool .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .maternity-result {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      width: 100%;
+      padding-top: 8px;
+      border-top: 1px dashed var(--line);
+      margin-top: 4px;
+    }
+
+    .maternity-result div {
+      font-size: 13px;
+    }
+
+    .maternity-result span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .maternity-result strong {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    body.maternity-mode .date:not(.blank) {
+      cursor: pointer;
+    }
+
+    body.maternity-mode .date:not(.blank):hover {
+      outline: 2px solid #d97aa6;
+      outline-offset: -2px;
+    }
+
+    .date.maternity-range {
+      background: #fde4ee !important;
+    }
+
+    .date.maternity-start,
+    .date.maternity-end {
+      background: #f5b5cf !important;
+    }
+
+    .date.maternity-start .num::after {
+      content: " 시작";
+      font-size: 9px;
+      color: #6a234a;
+    }
+
+    .date.maternity-end .num::after {
+      content: " 종료";
+      font-size: 9px;
+      color: #6a234a;
+    }
+
     @media (max-width: 1180px) {
       .months,
       .summary-grid {
@@ -458,6 +556,18 @@
           <li>Sick Leave는 매년 5일 부여, 미사용분 이월 없음으로 계산했습니다.</li>
         </ul>
       </article>
+    </section>
+
+    <section class="maternity-tool" aria-label="출산휴가 계산기">
+      <h2>출산휴가 계산기</h2>
+      <button type="button" id="maternity-toggle">시작일 선택하기</button>
+      <span class="hint">버튼을 누른 뒤 캘린더에서 시작일을 클릭하세요. 공휴일·휴일 포함 90일.</span>
+      <div class="maternity-result" id="maternity-result" hidden>
+        <div><span>시작일</span><strong id="maternity-start-out">-</strong></div>
+        <div><span>종료일 (90일째)</span><strong id="maternity-end-out">-</strong></div>
+        <div><span>복귀일</span><strong id="maternity-return-out">-</strong></div>
+        <div style="margin-left:auto;"><button type="button" id="maternity-clear">초기화</button></div>
+      </div>
     </section>
 
     <section class="year-section" id="year-2026">
@@ -697,7 +807,7 @@
         if (entries.some((entry) => entry.type === "holiday")) classes.push("holiday");
 
         cells.push(`
-          <div class="${classes.join(" ")}">
+          <div class="${classes.join(" ")}" data-date="${dateKey}">
             <span class="num">${day}</span>
             <div class="labels">
               ${entries.map(renderLabel).join("")}
@@ -730,6 +840,73 @@
     renderSummary(2025);
     renderCalendar(2026);
     renderCalendar(2025);
+
+    (function setupMaternityTool() {
+      const toggleBtn = document.getElementById("maternity-toggle");
+      const clearBtn = document.getElementById("maternity-clear");
+      const resultBox = document.getElementById("maternity-result");
+      const startOut = document.getElementById("maternity-start-out");
+      const endOut = document.getElementById("maternity-end-out");
+      const returnOut = document.getElementById("maternity-return-out");
+      let active = false;
+
+      const weekdayKor = ["일", "월", "화", "수", "목", "금", "토"];
+      function fmtKor(date) {
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} (${weekdayKor[date.getDay()]})`;
+      }
+
+      function clearHighlights() {
+        document.querySelectorAll(".date.maternity-range, .date.maternity-start, .date.maternity-end")
+          .forEach((el) => el.classList.remove("maternity-range", "maternity-start", "maternity-end"));
+      }
+
+      function setMode(on) {
+        active = on;
+        document.body.classList.toggle("maternity-mode", on);
+        toggleBtn.classList.toggle("active", on);
+        toggleBtn.textContent = on ? "선택 취소" : "시작일 선택하기";
+      }
+
+      function handleDateClick(e) {
+        if (!active) return;
+        const cell = e.target.closest(".date");
+        if (!cell || cell.classList.contains("blank")) return;
+        const key = cell.getAttribute("data-date");
+        if (!key) return;
+
+        const start = parseLocalDate(key);
+        const end = new Date(start);
+        end.setDate(end.getDate() + 89);
+        const ret = new Date(end);
+        ret.setDate(ret.getDate() + 1);
+
+        clearHighlights();
+        const startKey = formatDate(start);
+        const endKey = formatDate(end);
+        document.querySelectorAll(".date[data-date]").forEach((el) => {
+          const d = el.getAttribute("data-date");
+          if (d >= startKey && d <= endKey) {
+            el.classList.add("maternity-range");
+            if (d === startKey) el.classList.add("maternity-start");
+            if (d === endKey) el.classList.add("maternity-end");
+          }
+        });
+
+        startOut.textContent = fmtKor(start);
+        endOut.textContent = fmtKor(end);
+        returnOut.textContent = fmtKor(ret);
+        resultBox.hidden = false;
+        setMode(false);
+      }
+
+      toggleBtn.addEventListener("click", () => setMode(!active));
+      clearBtn.addEventListener("click", () => {
+        clearHighlights();
+        resultBox.hidden = true;
+        setMode(false);
+      });
+      document.addEventListener("click", handleDateClick);
+    })();
   </script>
 </body>
 </html>
