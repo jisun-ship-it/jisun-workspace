@@ -643,25 +643,22 @@
         });
 
       const totalHours = totals.pto + totals.sick + totals.toil;
-      const carryover2025Used = 40;
-      const raw2025Carryover = Math.max(annualAllowance.pto - getUsedHours(2025, "pto"), 0);
-      const carryoverPto = year === 2026 ? Math.max(raw2025Carryover - carryover2025Used, 0) : 0;
+      const carryoverPto = year === 2026 ? Math.max(annualAllowance.pto - getUsedHours(2025, "pto"), 0) : 0;
       const availablePto = annualAllowance.pto + carryoverPto;
       const remainingPto = availablePto - totals.pto;
       const remainingSick = annualAllowance.sick - totals.sick;
       const ptoAllowanceText = `부여 ${formatHours(annualAllowance.pto)}${carryoverPto ? ` + 2025 이월 ${formatHours(carryoverPto)} total ${formatHours(availablePto)}` : ""}`;
-      const ptoBalanceSuffix = year === 2025 ? "-2026년 3월에 전부 사용" : "";
       const items = [
-        ["유급휴가", totals.pto, ptoAllowanceText, remainingPto, ptoBalanceSuffix],
-        ["Sick Leave", totals.sick, `부여 ${formatHours(annualAllowance.sick)}`, remainingSick, ""],
-        ["대체휴가", totals.toil, "", null, ""],
-        ["합계", totalHours, "", null, ""]
+        ["유급휴가", totals.pto, ptoAllowanceText, remainingPto],
+        ["Sick Leave", totals.sick, `부여 ${formatHours(annualAllowance.sick)}`, remainingSick],
+        ["대체휴가", totals.toil, "", null],
+        ["합계", totalHours, "", null]
       ];
 
-      document.querySelector(`#summary-${year}`).innerHTML = items.map(([label, hours, caption, balance, balanceSuffix]) => `
+      document.querySelector(`#summary-${year}`).innerHTML = items.map(([label, hours, caption, balance]) => `
         <div class="total">
           <span>${label}</span>
-          <strong>${formatHours(hours)}${balance === null ? "" : ` <span class="balance-inline">(잔여 ${formatHours(balance)}${balanceSuffix || ""})</span>`}</strong>
+          <strong>${formatHours(hours)}${balance === null ? "" : ` <span class="balance-inline">(잔여 ${formatHours(balance)})</span>`}</strong>
           ${caption ? `<small>${caption}</small>` : ""}
         </div>
       `).join("");
