@@ -383,6 +383,41 @@
   </style>
 </head>
 <body>
+<div id="password-gate" style="position:fixed;inset:0;background:#f3f6fa;display:flex;align-items:center;justify-content:center;z-index:9999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <form id="password-form" style="background:#fff;padding:32px 36px;border-radius:14px;box-shadow:0 8px 32px rgba(23,32,51,.08);display:flex;flex-direction:column;gap:14px;min-width:280px;">
+    <div style="font-size:15px;color:#172033;font-weight:600;">비밀번호를 입력하세요</div>
+    <input id="password-input" type="password" autofocus style="padding:10px 12px;border:1px solid #d8e0ec;border-radius:8px;font-size:14px;outline:none;" />
+    <button type="submit" style="padding:10px 12px;border:0;border-radius:8px;background:#172033;color:#fff;font-size:14px;font-weight:600;cursor:pointer;">확인</button>
+    <div id="password-error" style="color:#9d2e22;font-size:12px;display:none;">비밀번호가 올바르지 않습니다.</div>
+  </form>
+</div>
+<script>
+(function(){
+  var PW = 'sehee';
+  var gate = document.getElementById('password-gate');
+  var form = document.getElementById('password-form');
+  var input = document.getElementById('password-input');
+  var err = document.getElementById('password-error');
+  document.documentElement.style.overflow = 'hidden';
+  if (sessionStorage.getItem('lc_auth') === '1') {
+    gate.remove();
+    document.documentElement.style.overflow = '';
+  }
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    if (input.value === PW) {
+      sessionStorage.setItem('lc_auth', '1');
+      gate.remove();
+      document.documentElement.style.overflow = '';
+    } else {
+      err.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  });
+})();
+</script>
+
   <main>
     <header>
       <div>
