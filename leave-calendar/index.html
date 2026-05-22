@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>세희님 휴가 사용 캘린더</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #66738a;
+      --line: #d8e0ec;
+      --page: #f3f6fa;
+      --panel: #ffffff;
+      --holiday-bg: #ffe7e2;
+      --holiday-ink: #9d2e22;
+      --pto-bg: #daf2e5;
+      --pto-ink: #17603a;
+      --sick-bg: #e7e1ff;
+      --sick-ink: #4d38a2;
+      --toil-bg: #fff0c9;
+      --toil-ink: #74530a;
+      --weekend: #f7f9fc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--page);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+      line-height: 1.35;
+    }
+
+    main {
+      width: min(1640px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 26px 0 40px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 14px;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .jump-nav {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .jump-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background: #fff;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-card,
+    .notes-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(23, 32, 51, 0.06);
+    }
+
+    .summary-card h2,
+    .notes-card h2 {
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    .totals {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .total {
+      min-height: 86px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .total span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .total strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .balance-inline {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .total small {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .legend-item {
+      border-radius: 7px;
+      padding: 9px 10px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .notes-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .year-section {
+      scroll-margin-top: 12px;
+      margin-top: 18px;
+    }
+
+    .year-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 6px 0 10px;
+    }
+
+    .year-title h2 {
+      font-size: 25px;
+    }
+
+    .year-title span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .months {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .month {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 8px 20px rgba(23, 32, 51, 0.05);
+    }
+
+    .month-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .month-head h3 {
+      font-size: 18px;
+    }
+
+    .month-head span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .days,
+    .dates {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+    }
+
+    .day {
+      padding: 7px 4px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .day.sun,
+    .date.sun .num,
+    .date.holiday .num {
+      color: var(--holiday-ink);
+    }
+
+    .day.sat {
+      color: #1c5f9f;
+    }
+
+    .date {
+      min-height: 78px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 5px;
+      background: #fff;
+    }
+
+    .date:nth-child(7n) {
+      border-right: 0;
+    }
+
+    .date.blank,
+    .date.weekend {
+      background: var(--weekend);
+    }
+
+    .num {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .labels {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .label {
+      display: block;
+      width: 100%;
+      border-radius: 5px;
+      padding: 3px 5px;
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.18;
+      overflow-wrap: anywhere;
+    }
+
+    .holiday-label {
+      background: var(--holiday-bg);
+      color: var(--holiday-ink);
+    }
+
+    .pto-label,
+    .legend-pto {
+      background: var(--pto-bg);
+      color: var(--pto-ink);
+    }
+
+    .sick-label,
+    .legend-sick {
+      background: var(--sick-bg);
+      color: var(--sick-ink);
+    }
+
+    .toil-label,
+    .legend-toil {
+      background: var(--toil-bg);
+      color: var(--toil-ink);
+    }
+
+    .legend-holiday {
+      background: var(--holiday-bg);
+      color: var(--holiday-ink);
+    }
+
+    @media (max-width: 1180px) {
+      .months,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      main {
+        width: min(100% - 16px, 1640px);
+      }
+
+      header,
+      .totals,
+      .legend {
+        grid-template-columns: 1fr;
+      }
+
+      .jump-nav {
+        justify-content: flex-start;
+      }
+
+      .date {
+        min-height: 68px;
+        padding: 4px;
+      }
+
+      .label {
+        font-size: 9px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      main {
+        width: 100%;
+        padding: 10px;
+      }
+
+      .summary-card,
+      .notes-card,
+      .month {
+        break-inside: avoid;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>세희님 휴가 사용 캘린더</h1>
+        <p class="subtitle">2026년을 상단에, 2025년 휴가 승인 리스트를 하단에 반영했습니다. 시간 단위 사용분은 8시간을 1일로 환산했습니다.</p>
+      </div>
+      <nav class="jump-nav" aria-label="연도 이동">
+        <a href="#year-2026">2026 보기</a>
+        <a href="#year-2025">2025 보기</a>
+      </nav>
+    </header>
+
+    <section class="summary-grid" aria-label="휴가 사용 요약">
+      <article class="summary-card">
+        <h2>2026 사용 요약</h2>
+        <div class="totals" id="summary-2026"></div>
+      </article>
+      <article class="summary-card">
+        <h2>2025 사용 요약</h2>
+        <div class="totals" id="summary-2025"></div>
+      </article>
+      <article class="notes-card">
+        <h2>범례</h2>
+        <div class="legend">
+          <span class="legend-item legend-holiday">Nat Holiday-KOR</span>
+          <span class="legend-item legend-pto">유급휴가 / Vacation PTO</span>
+          <span class="legend-item legend-sick">Sick Leave / 특별휴가</span>
+          <span class="legend-item legend-toil">Time off in lieu / 대체휴가</span>
+        </div>
+      </article>
+      <article class="notes-card">
+        <h2>계산 기준</h2>
+        <ul>
+          <li>전일은 8시간, 반차는 4시간으로 계산했습니다.</li>
+          <li>1시간, 2시간처럼 시간으로 승인된 Sick Leave는 누적해 8시간당 1일로 환산했습니다.</li>
+          <li>기간 휴가는 주말을 제외한 평일만 사용일로 계산했습니다.</li>
+          <li>유급휴가는 매년 20일 부여, 미사용분은 다음해 이월로 계산했습니다.</li>
+          <li>Sick Leave는 매년 5일 부여, 미사용분 이월 없음으로 계산했습니다.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="year-section" id="year-2026">
+      <div class="year-title">
+        <h2>2026</h2>
+        <span>상단 연도</span>
+      </div>
+      <div class="months" id="calendar-2026"></div>
+    </section>
+
+    <section class="year-section" id="year-2025">
+      <div class="year-title">
+        <h2>2025</h2>
+        <span>2025년 휴가 승인 리스트 반영</span>
+      </div>
+      <div class="months" id="calendar-2025"></div>
+    </section>
+  </main>
+
+  <script>
+    const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+    const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+    const annualAllowance = {
+      pto: 160,
+      sick: 40
+    };
+
+    const holidays = [
+      { date: "2025-01-01", title: "신정" },
+      { date: "2025-01-27", title: "임시공휴일" },
+      { date: "2025-01-28", title: "설날 연휴" },
+      { date: "2025-01-29", title: "설날" },
+      { date: "2025-01-30", title: "설날 연휴" },
+      { date: "2025-03-01", title: "삼일절" },
+      { date: "2025-03-03", title: "삼일절 대체" },
+      { date: "2025-05-01", title: "근로자의 날" },
+      { date: "2025-05-05", title: "어린이날, 부처님오신날" },
+      { date: "2025-05-06", title: "대체공휴일" },
+      { date: "2025-06-03", title: "대통령선거일" },
+      { date: "2025-06-06", title: "현충일" },
+      { date: "2025-08-15", title: "광복절" },
+      { date: "2025-10-03", title: "개천절" },
+      { date: "2025-10-05", title: "추석 연휴" },
+      { date: "2025-10-06", title: "추석" },
+      { date: "2025-10-07", title: "추석 연휴" },
+      { date: "2025-10-08", title: "추석 대체" },
+      { date: "2025-10-09", title: "한글날" },
+      { date: "2025-12-25", title: "크리스마스" },
+      { date: "2026-01-01", title: "신정" },
+      { date: "2026-02-16", title: "설날 연휴" },
+      { date: "2026-02-17", title: "설날" },
+      { date: "2026-02-18", title: "설날 연휴" },
+      { date: "2026-03-01", title: "삼일절" },
+      { date: "2026-03-02", title: "삼일절 대체" },
+      { date: "2026-05-01", title: "근로자의 날" },
+      { date: "2026-05-05", title: "어린이날" },
+      { date: "2026-05-24", title: "부처님오신날" },
+      { date: "2026-05-25", title: "부처님오신날 대체" },
+      { date: "2026-06-03", title: "전국동시지방선거" },
+      { date: "2026-07-17", title: "제헌절" },
+      { date: "2026-08-17", title: "광복절 대체" },
+      { date: "2026-09-24", title: "추석" },
+      { date: "2026-09-25", title: "추석" },
+      { date: "2026-10-05", title: "개천절 대체" },
+      { date: "2026-10-09", title: "한글날" },
+      { date: "2026-12-25", title: "크리스마스" }
+    ];
+
+    const leaveEvents = [
+      { year: 2026, type: "pto", dates: ["2026-01-06"], title: "유급휴가 오전", hours: 4 },
+      { year: 2026, type: "sick", dates: ["2026-02-03"], title: "Sick Leave 오전", hours: 4 },
+      { year: 2026, type: "pto", dates: ["2026-02-10"], title: "유급휴가 오후", hours: 4 },
+      { year: 2026, type: "sick", dates: ["2026-03-05"], title: "Sick Leave 1일", hours: 8 },
+      { year: 2026, type: "sick", dates: ["2026-03-27"], title: "Sick Leave 1일", hours: 8 },
+      { year: 2026, type: "sick", dates: ["2026-04-01"], title: "Sick Leave 오후", hours: 4 },
+      { year: 2026, type: "sick", dates: ["2026-04-03"], title: "Sick Leave 1일", hours: 8 },
+      { year: 2026, type: "sick", dates: ["2026-04-06"], title: "Sick Leave 1일", hours: 8 },
+      { year: 2026, type: "pto", dates: ["2026-04-07"], title: "유급휴가 1일", hours: 8 },
+      { year: 2026, type: "pto", dates: ["2026-04-13"], title: "유급휴가 1일", hours: 8 },
+      { year: 2026, type: "pto", dates: ["2026-04-29"], title: "유급휴가 오전", hours: 4 },
+      { year: 2026, type: "pto", dates: ["2026-05-20"], title: "유급휴가 1일", hours: 8 },
+      { year: 2026, type: "pto", dates: ["2026-05-27"], title: "유급휴가 오후", hours: 4 },
+
+      { year: 2025, type: "pto", dates: ["2025-01-31"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "pto", dates: businessDates("2025-03-17", "2025-03-21"), title: "Vacation PTO 3/17-21", hours: 40 },
+      { year: 2025, type: "toil", dates: ["2025-04-11"], title: "TOIL 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-04-17"], title: "Sick 오후", hours: 4 },
+      { year: 2025, type: "sick", dates: ["2025-04-22"], title: "Sick 1시간", hours: 1 },
+      { year: 2025, type: "pto", dates: ["2025-05-02"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-05-12"], title: "Sick 2시간", hours: 2 },
+      { year: 2025, type: "pto", dates: ["2025-05-15"], title: "Vacation PTO 반차", hours: 4 },
+      { year: 2025, type: "toil", dates: businessDates("2025-06-20", "2025-06-24"), title: "TOIL 6/20-24", hours: 24 },
+      { year: 2025, type: "toil", dates: ["2025-07-21"], title: "TOIL 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-08-05"], title: "Sick 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-08-18"], title: "Sick 반차", hours: 4 },
+      { year: 2025, type: "toil", dates: ["2025-08-21"], title: "TOIL 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-08-22"], title: "Sick 반차", hours: 4 },
+      { year: 2025, type: "pto", dates: ["2025-08-27"], title: "Vacation PTO 반차", hours: 4 },
+      { year: 2025, type: "pto", dates: ["2025-09-10"], title: "Vacation PTO 반차", hours: 4 },
+      { year: 2025, type: "pto", dates: ["2025-09-26"], title: "Vacation PTO 반차", hours: 4 },
+      { year: 2025, type: "pto", dates: ["2025-10-10"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-10-22"], title: "Sick 1일", hours: 8 },
+      { year: 2025, type: "sick", dates: ["2025-11-07"], title: "Sick 반차", hours: 4 },
+      { year: 2025, type: "pto", dates: ["2025-11-17"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "pto", dates: ["2025-11-18"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "pto", dates: ["2025-11-28"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "pto", dates: ["2025-12-24"], title: "Vacation PTO 1일", hours: 8 },
+      { year: 2025, type: "pto", dates: ["2025-12-26"], title: "Vacation PTO 1일", hours: 8 }
+    ];
+
+    function businessDates(start, end) {
+      const dates = [];
+      const cursor = parseLocalDate(start);
+      const last = parseLocalDate(end);
+      while (cursor <= last) {
+        const day = cursor.getDay();
+        if (day !== 0 && day !== 6) dates.push(formatDate(cursor));
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return dates;
+    }
+
+    function parseLocalDate(value) {
+      const [year, month, date] = value.split("-").map(Number);
+      return new Date(year, month - 1, date);
+    }
+
+    function formatDate(date) {
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    function formatHours(hours) {
+      if (hours === 0) return "0일";
+      const days = Math.floor(hours / 8);
+      const rest = hours % 8;
+      if (rest === 0) return `${days}일`;
+      if (days === 0) return `${rest}시간`;
+      return `${days}일 ${rest}시간`;
+    }
+
+    function trimNumber(value) {
+      return Number(value.toFixed(3)).toString();
+    }
+
+    function buildDateMap(year) {
+      const map = new Map();
+      holidays
+        .filter((item) => item.date.startsWith(String(year)))
+        .forEach((item) => {
+          if (!map.has(item.date)) map.set(item.date, []);
+          map.get(item.date).push({ type: "holiday", title: `Nat Holiday-KOR ${item.title}` });
+        });
+
+      leaveEvents
+        .filter((event) => event.year === year)
+        .forEach((event) => {
+          const perDateHours = event.hours / event.dates.length;
+          event.dates.forEach((date) => {
+            if (!map.has(date)) map.set(date, []);
+            map.get(date).push({
+              type: event.type,
+              title: event.title,
+              hours: perDateHours
+            });
+          });
+        });
+      return map;
+    }
+
+    function renderSummary(year) {
+      const totals = { pto: 0, sick: 0, toil: 0 };
+      leaveEvents
+        .filter((event) => event.year === year)
+        .forEach((event) => {
+          totals[event.type] += event.hours;
+        });
+
+      const totalHours = totals.pto + totals.sick + totals.toil;
+      const carryoverPto = year === 2026 ? Math.max(annualAllowance.pto - getUsedHours(2025, "pto"), 0) : 0;
+      const availablePto = annualAllowance.pto + carryoverPto;
+      const remainingPto = availablePto - totals.pto;
+      const remainingSick = annualAllowance.sick - totals.sick;
+      const ptoAllowanceText = `부여 ${formatHours(annualAllowance.pto)}${carryoverPto ? ` + 2025 이월 ${formatHours(carryoverPto)} total ${formatHours(availablePto)}` : ""}`;
+      const items = [
+        ["유급휴가", totals.pto, ptoAllowanceText, remainingPto],
+        ["Sick Leave", totals.sick, `부여 ${formatHours(annualAllowance.sick)}`, remainingSick],
+        ["대체휴가", totals.toil, "", null],
+        ["합계", totalHours, "", null]
+      ];
+
+      document.querySelector(`#summary-${year}`).innerHTML = items.map(([label, hours, caption, balance]) => `
+        <div class="total">
+          <span>${label}</span>
+          <strong>${formatHours(hours)}${balance === null ? "" : ` <span class="balance-inline">(잔여 ${formatHours(balance)})</span>`}</strong>
+          ${caption ? `<small>${caption}</small>` : ""}
+        </div>
+      `).join("");
+    }
+
+    function getUsedHours(year, type) {
+      return leaveEvents
+        .filter((event) => event.year === year && event.type === type)
+        .reduce((sum, event) => sum + event.hours, 0);
+    }
+
+    function renderCalendar(year) {
+      const container = document.querySelector(`#calendar-${year}`);
+      const dateMap = buildDateMap(year);
+      const monthCount = year === 2026 ? 6 : 12;
+      container.innerHTML = Array.from({ length: monthCount }, (_, index) => renderMonth(year, index, dateMap)).join("");
+    }
+
+    function renderMonth(year, monthIndex, dateMap) {
+      const first = new Date(year, monthIndex, 1);
+      const lastDate = new Date(year, monthIndex + 1, 0).getDate();
+      const blanks = first.getDay();
+      const cells = [];
+
+      for (let i = 0; i < blanks; i += 1) {
+        cells.push('<div class="date blank" aria-hidden="true"></div>');
+      }
+
+      for (let day = 1; day <= lastDate; day += 1) {
+        const current = new Date(year, monthIndex, day);
+        const dateKey = formatDate(current);
+        const entries = dateMap.get(dateKey) || [];
+        const classes = ["date"];
+        if (current.getDay() === 0) classes.push("sun", "weekend");
+        if (current.getDay() === 6) classes.push("weekend");
+        if (entries.some((entry) => entry.type === "holiday")) classes.push("holiday");
+
+        cells.push(`
+          <div class="${classes.join(" ")}">
+            <span class="num">${day}</span>
+            <div class="labels">
+              ${entries.map(renderLabel).join("")}
+            </div>
+          </div>
+        `);
+      }
+
+      return `
+        <article class="month">
+          <div class="month-head">
+            <h3>${monthIndex + 1}월</h3>
+            <span>${monthNames[monthIndex]} ${year}</span>
+          </div>
+          <div class="days" aria-hidden="true">
+            ${dayNames.map((day, index) => `<div class="day ${index === 0 ? "sun" : index === 6 ? "sat" : ""}">${day}</div>`).join("")}
+          </div>
+          <div class="dates">${cells.join("")}</div>
+        </article>
+      `;
+    }
+
+    function renderLabel(entry) {
+      const className = entry.type === "holiday" ? "holiday-label" : `${entry.type}-label`;
+      const hourText = entry.hours ? ` · ${entry.hours >= 8 ? `${trimNumber(entry.hours / 8)}일` : `${trimNumber(entry.hours)}h`}` : "";
+      return `<span class="label ${className}">${entry.title}${hourText}</span>`;
+    }
+
+    renderSummary(2026);
+    renderSummary(2025);
+    renderCalendar(2026);
+    renderCalendar(2025);
+  </script>
+</body>
+</html>
