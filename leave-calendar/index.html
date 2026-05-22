@@ -673,7 +673,7 @@
     function renderCalendar(year) {
       const container = document.querySelector(`#calendar-${year}`);
       const dateMap = buildDateMap(year);
-      const monthCount = year === 2026 ? 6 : 12;
+      const monthCount = 12;
       container.innerHTML = Array.from({ length: monthCount }, (_, index) => renderMonth(year, index, dateMap)).join("");
     }
 
