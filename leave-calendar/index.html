@@ -331,12 +331,23 @@
       color: var(--holiday-ink);
     }
 
-    .maternity-tool {
+    .tools-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0 6px;
+      padding: 8px 0;
+      background: var(--page);
+    }
+
+    .tool-card {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 10px;
-      margin: 14px 0 6px;
       padding: 12px 14px;
       border: 1px solid var(--line);
       border-radius: 8px;
@@ -344,12 +355,12 @@
       box-shadow: 0 8px 20px rgba(23, 32, 51, 0.05);
     }
 
-    .maternity-tool h2 {
+    .tool-card h2 {
       margin: 0;
       font-size: 16px;
     }
 
-    .maternity-tool button {
+    .tool-card button {
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 8px 14px;
@@ -366,13 +377,20 @@
       color: #6a234a;
     }
 
-    .maternity-tool .hint {
+    .annual-tool button.active {
+      background: #cdebd7;
+      border-color: #17603a;
+      color: #17603a;
+    }
+
+    .tool-card .hint {
       color: var(--muted);
       font-size: 12px;
       font-weight: 700;
+      flex-basis: 100%;
     }
 
-    .maternity-result {
+    .tool-result {
       display: flex;
       flex-wrap: wrap;
       gap: 16px;
@@ -382,11 +400,11 @@
       margin-top: 4px;
     }
 
-    .maternity-result div {
+    .tool-result div {
       font-size: 13px;
     }
 
-    .maternity-result span {
+    .tool-result span {
       display: block;
       color: var(--muted);
       font-size: 11px;
@@ -394,17 +412,23 @@
       margin-bottom: 3px;
     }
 
-    .maternity-result strong {
+    .tool-result strong {
       font-size: 16px;
       font-weight: 800;
     }
 
-    body.maternity-mode .date:not(.blank) {
+    body.maternity-mode .date:not(.blank),
+    body.annual-mode .date:not(.blank):not(.weekend):not(.holiday) {
       cursor: pointer;
     }
 
     body.maternity-mode .date:not(.blank):hover {
       outline: 2px solid #d97aa6;
+      outline-offset: -2px;
+    }
+
+    body.annual-mode .date:not(.blank):not(.weekend):not(.holiday):hover {
+      outline: 2px solid #17603a;
       outline-offset: -2px;
     }
 
@@ -427,6 +451,24 @@
       content: " 종료";
       font-size: 9px;
       color: #6a234a;
+    }
+
+    .date.annual-selected {
+      background: #cdebd7 !important;
+      outline: 2px solid #17603a;
+      outline-offset: -2px;
+    }
+
+    .date.annual-selected .num::after {
+      content: " ✓";
+      font-size: 10px;
+      color: #17603a;
+    }
+
+    @media (max-width: 1180px) {
+      .tools-bar {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 1180px) {
@@ -558,15 +600,28 @@
       </article>
     </section>
 
-    <section class="maternity-tool" aria-label="출산휴가 계산기">
-      <h2>출산휴가 계산기</h2>
-      <button type="button" id="maternity-toggle">시작일 선택하기</button>
-      <span class="hint">버튼을 누른 뒤 캘린더에서 시작일을 클릭하세요. 공휴일·휴일 포함 90일.</span>
-      <div class="maternity-result" id="maternity-result" hidden>
-        <div><span>시작일</span><strong id="maternity-start-out">-</strong></div>
-        <div><span>종료일 (90일째)</span><strong id="maternity-end-out">-</strong></div>
-        <div><span>복귀일</span><strong id="maternity-return-out">-</strong></div>
-        <div style="margin-left:auto;"><button type="button" id="maternity-clear">초기화</button></div>
+    <section class="tools-bar" aria-label="휴가 계산기">
+      <div class="tool-card maternity-tool">
+        <h2>출산휴가 계산기</h2>
+        <button type="button" id="maternity-toggle">시작일 선택하기</button>
+        <span class="hint">버튼을 누른 뒤 캘린더에서 시작일을 클릭하세요. 공휴일·휴일 포함 90일.</span>
+        <div class="tool-result" id="maternity-result" hidden>
+          <div><span>시작일</span><strong id="maternity-start-out">-</strong></div>
+          <div><span>종료일 (90일째)</span><strong id="maternity-end-out">-</strong></div>
+          <div><span>복귀일</span><strong id="maternity-return-out">-</strong></div>
+          <div style="margin-left:auto;"><button type="button" id="maternity-clear">초기화</button></div>
+        </div>
+      </div>
+      <div class="tool-card annual-tool">
+        <h2>잔여 연차 계산기</h2>
+        <button type="button" id="annual-toggle">날짜 선택하기</button>
+        <span class="hint">버튼을 누른 뒤 평일을 하나씩 클릭하세요. 다시 클릭하면 해제됩니다. (주말·공휴일 제외)</span>
+        <div class="tool-result" id="annual-result" hidden>
+          <div><span>선택 일수</span><strong id="annual-count-out">0일</strong></div>
+          <div><span>현재 잔여</span><strong id="annual-remaining-out">-</strong></div>
+          <div><span>선택 후 잔여</span><strong id="annual-after-out">-</strong></div>
+          <div style="margin-left:auto;"><button type="button" id="annual-clear">초기화</button></div>
+        </div>
       </div>
     </section>
 
@@ -841,47 +896,35 @@
     renderCalendar(2026);
     renderCalendar(2025);
 
-    (function setupMaternityTool() {
-      const toggleBtn = document.getElementById("maternity-toggle");
-      const clearBtn = document.getElementById("maternity-clear");
-      const resultBox = document.getElementById("maternity-result");
-      const startOut = document.getElementById("maternity-start-out");
-      const endOut = document.getElementById("maternity-end-out");
-      const returnOut = document.getElementById("maternity-return-out");
-      let active = false;
-
+    (function setupTools() {
       const weekdayKor = ["일", "월", "화", "수", "목", "금", "토"];
       function fmtKor(date) {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} (${weekdayKor[date.getDay()]})`;
       }
 
-      function clearHighlights() {
+      let activeMode = null; // 'maternity' | 'annual' | null
+
+      // ===== Maternity =====
+      const matToggle = document.getElementById("maternity-toggle");
+      const matClear = document.getElementById("maternity-clear");
+      const matResult = document.getElementById("maternity-result");
+      const matStartOut = document.getElementById("maternity-start-out");
+      const matEndOut = document.getElementById("maternity-end-out");
+      const matReturnOut = document.getElementById("maternity-return-out");
+
+      function clearMaternityHighlights() {
         document.querySelectorAll(".date.maternity-range, .date.maternity-start, .date.maternity-end")
           .forEach((el) => el.classList.remove("maternity-range", "maternity-start", "maternity-end"));
       }
 
-      function setMode(on) {
-        active = on;
-        document.body.classList.toggle("maternity-mode", on);
-        toggleBtn.classList.toggle("active", on);
-        toggleBtn.textContent = on ? "선택 취소" : "시작일 선택하기";
-      }
-
-      function handleDateClick(e) {
-        if (!active) return;
-        const cell = e.target.closest(".date");
-        if (!cell || cell.classList.contains("blank")) return;
-        const key = cell.getAttribute("data-date");
-        if (!key) return;
-
-        const start = parseLocalDate(key);
+      function applyMaternity(startKey) {
+        const start = parseLocalDate(startKey);
         const end = new Date(start);
         end.setDate(end.getDate() + 89);
         const ret = new Date(end);
         ret.setDate(ret.getDate() + 1);
 
-        clearHighlights();
-        const startKey = formatDate(start);
+        clearMaternityHighlights();
         const endKey = formatDate(end);
         document.querySelectorAll(".date[data-date]").forEach((el) => {
           const d = el.getAttribute("data-date");
@@ -892,20 +935,91 @@
           }
         });
 
-        startOut.textContent = fmtKor(start);
-        endOut.textContent = fmtKor(end);
-        returnOut.textContent = fmtKor(ret);
-        resultBox.hidden = false;
-        setMode(false);
+        matStartOut.textContent = fmtKor(start);
+        matEndOut.textContent = fmtKor(end);
+        matReturnOut.textContent = fmtKor(ret);
+        matResult.hidden = false;
       }
 
-      toggleBtn.addEventListener("click", () => setMode(!active));
-      clearBtn.addEventListener("click", () => {
-        clearHighlights();
-        resultBox.hidden = true;
-        setMode(false);
+      // ===== Annual =====
+      const annToggle = document.getElementById("annual-toggle");
+      const annClear = document.getElementById("annual-clear");
+      const annResult = document.getElementById("annual-result");
+      const annCountOut = document.getElementById("annual-count-out");
+      const annRemainingOut = document.getElementById("annual-remaining-out");
+      const annAfterOut = document.getElementById("annual-after-out");
+      const selectedAnnual = new Set();
+
+      function getRemainingPto2026Days() {
+        const carryoverHours = Math.max(annualAllowance.pto - getUsedHours(2025, "pto"), 0);
+        const available = annualAllowance.pto + carryoverHours;
+        const used = getUsedHours(2026, "pto");
+        return (available - used) / 8;
+      }
+      const initialRemaining = getRemainingPto2026Days();
+
+      function updateAnnualResult() {
+        const count = selectedAnnual.size;
+        annCountOut.textContent = `${count}일`;
+        annRemainingOut.textContent = `${initialRemaining}일`;
+        const after = initialRemaining - count;
+        annAfterOut.textContent = `${after}일`;
+        annAfterOut.style.color = after < 0 ? "#9d2e22" : "";
+        annResult.hidden = count === 0;
+      }
+
+      function clearAnnualHighlights() {
+        document.querySelectorAll(".date.annual-selected")
+          .forEach((el) => el.classList.remove("annual-selected"));
+        selectedAnnual.clear();
+        updateAnnualResult();
+      }
+
+      // ===== Mode management =====
+      function setMode(mode) {
+        activeMode = mode;
+        document.body.classList.toggle("maternity-mode", mode === "maternity");
+        document.body.classList.toggle("annual-mode", mode === "annual");
+        matToggle.classList.toggle("active", mode === "maternity");
+        annToggle.classList.toggle("active", mode === "annual");
+        matToggle.textContent = mode === "maternity" ? "선택 취소" : "시작일 선택하기";
+        annToggle.textContent = mode === "annual" ? "선택 완료" : "날짜 선택하기";
+      }
+
+      matToggle.addEventListener("click", () => setMode(activeMode === "maternity" ? null : "maternity"));
+      annToggle.addEventListener("click", () => setMode(activeMode === "annual" ? null : "annual"));
+      matClear.addEventListener("click", () => {
+        clearMaternityHighlights();
+        matResult.hidden = true;
+        if (activeMode === "maternity") setMode(null);
       });
-      document.addEventListener("click", handleDateClick);
+      annClear.addEventListener("click", () => {
+        clearAnnualHighlights();
+        if (activeMode === "annual") setMode(null);
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!activeMode) return;
+        const cell = e.target.closest(".date");
+        if (!cell || cell.classList.contains("blank")) return;
+        const key = cell.getAttribute("data-date");
+        if (!key) return;
+
+        if (activeMode === "maternity") {
+          applyMaternity(key);
+          setMode(null);
+        } else if (activeMode === "annual") {
+          if (cell.classList.contains("weekend") || cell.classList.contains("holiday")) return;
+          if (selectedAnnual.has(key)) {
+            selectedAnnual.delete(key);
+            cell.classList.remove("annual-selected");
+          } else {
+            selectedAnnual.add(key);
+            cell.classList.add("annual-selected");
+          }
+          updateAnnualResult();
+        }
+      });
     })();
   </script>
 </body>
